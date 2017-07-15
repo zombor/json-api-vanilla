@@ -56,6 +56,8 @@ module JSON::Api::Vanilla
     # converted to the same ruby method identifier.
     original_keys = {}
 
+    actual_links = hash['links']
+
     obj_hashes.each do |o_hash|
       klass = prepare_class(o_hash, superclass, container)
       obj = klass.new
@@ -109,7 +111,7 @@ module JSON::Api::Vanilla
     end
     links[data] = hash['links']
     meta[data] = hash['meta']
-    Document.new(data, links: links, rel_links: rel_links, meta: meta,
+    Document.new(data, links: links, rel_links: rel_links, actual_links: actual_links, meta: meta,
                  objects: objects, keys: original_keys, errors: errors,
                  container: container, superclass: superclass)
   end
@@ -198,7 +200,10 @@ module JSON::Api::Vanilla
     attr_reader :keys
     attr_reader :container
     attr_reader :superclass
-    def initialize(data, links: {}, rel_links: {}, meta: {},
+
+    attr_reader :actual_links
+
+    def initialize(data, links: {}, rel_links: {}, actual_links: {}, meta: {},
                    keys: {}, objects: {}, errors: [],
                    container: Module.new, superclass: Class.new)
       @data = data
@@ -210,6 +215,7 @@ module JSON::Api::Vanilla
       @errors = errors
       @container = container
       @superclass = superclass
+      @actual_links = actual_links
     end
 
     # Get a JSON API object.
