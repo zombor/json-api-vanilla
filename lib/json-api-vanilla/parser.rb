@@ -93,7 +93,17 @@ module JSON::Api::Vanilla
           end
 
           ref = ref || Object.new
-          set_key(obj, key, ref, original_keys)
+
+          # Only set a full relationship link if the object is in included.
+          # This fixes circular references if the thing in data references
+          #   something in included and that same thing would reference
+          #   the thing from the main data. This allows the object to be
+          #   json marshalled without an infinite loop occurring.
+          if !ref.respond_to?(:type) || hash['included'].find { |i| i['type'] == ref.type && i['id'] == ref.id }
+            set_key(obj, key, ref, original_keys)
+          else
+            set_key(obj, key, Struct.new(:type, :id).new(ref.type, ref.id), original_keys)
+          end
 
           rel_links[ref] = value['links']
           meta[ref] = value['meta']
